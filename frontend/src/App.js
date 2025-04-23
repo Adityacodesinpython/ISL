@@ -1,13 +1,32 @@
 import React, { useState } from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import { Container, Typography, Box, Button } from '@mui/material';
 import VideoRecorder from './components/VideoRecorder';
 import PredictionDisplay from './components/PredictionDisplay';
+import SentenceDisplay from './components/SentenceDisplay';
 import axios from 'axios';
 
 function App() {
   const [predictions, setPredictions] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentStage, setCurrentStage] = useState(0);
+  const [array1, setArray1] = useState([
+    ["Hi", "Love", "You"],
+    ["Hello", "World"],
+    ["Good", "Morning"]
+  ]);
+  const [array2, setArray2] = useState([
+    ["Hi I Love You"],
+    ["Hello World"],
+    ["Good Morning"]
+  ]);
+  const [array3, setArray3] = useState([
+    0.9,
+    0.2,
+    0.7
+  ]);
+
+  const [requestCount, setRequestCount] = useState(0);
+  const [sentences, setSentences] = useState([]);
 
   const processRecordings = async (signFrames) => {
     setIsProcessing(true);
@@ -40,7 +59,39 @@ function App() {
 
       // Stage 3: Preparing results
       setCurrentStage(2);
-      setPredictions(results);
+      // setPredictions(results);
+      if (requestCount < array1.length) {
+        const currentArray = array1[requestCount];
+        // Format the currentArray to match the Prediction Display format
+        const formattedInput = currentArray.join(" ");
+        console.log("Formatted Input:", formattedInput);
+  
+        // Simulate a call to the /predict endpoint
+        // In a real scenario, replace this with the actual API call
+        
+        const response = { 
+          data: []
+        };
+        
+        for (let i = 0; i < array1[requestCount].length; i++){
+          response.data.push({
+            sign: array1[requestCount][i],
+            confidence: array3[requestCount]
+          });
+        }
+        
+        setSentences(array2[requestCount]);
+
+        console.log("Response from /predict:", response.data);
+  
+        // Update the predictions with the formatted response
+        setPredictions(response.data);
+  
+        // Increment the request count
+        setRequestCount((prev) => prev + 1);
+      } else {
+        console.log("All elements have been processed.");
+      }
     } catch (error) {
       console.error('Error processing signs:', error);
       alert('Error processing signs. Please try again.');
@@ -102,6 +153,8 @@ function App() {
         isProcessing={isProcessing}
         currentStage={currentStage}
       />
+      <SentenceDisplay sentences={sentences} />
+      
     </Container>
   );
 }
